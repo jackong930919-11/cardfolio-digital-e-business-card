@@ -1,0 +1,8 @@
+{
+  "name": "Cardfolio — Digital E-Business Card",
+  "description": "Mobile-first digital business card with one-tap Save Contact (.vcf) and scannable QR sharing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
