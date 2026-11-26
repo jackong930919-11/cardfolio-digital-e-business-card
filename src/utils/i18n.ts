@@ -63,7 +63,7 @@ export interface CopyBundle {
 
 export const COPY: Record<Language, CopyBundle> = {
   zh: {
-    brand: 'Cardfolio',
+    brand: 'E-Business Name Card',
     editCard: '后台编制',
     doneEditing: '完成',
     customerView: '顾客视角',
@@ -123,7 +123,7 @@ export const COPY: Record<Language, CopyBundle> = {
     backToStudio: '返回后台编制模式',
   },
   en: {
-    brand: 'Cardfolio',
+    brand: 'E-Business Name Card',
     editCard: 'Builder',
     doneEditing: 'Done',
     customerView: 'Customer View',

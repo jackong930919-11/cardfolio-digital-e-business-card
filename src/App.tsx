@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pencil, Check, UserPlus, MessageCircle, Eye } from 'lucide-react';
+import { Pencil, Check, Eye } from 'lucide-react';
 import {
   BusinessCardData,
   DEFAULT_AVATAR_URL,
@@ -9,11 +9,9 @@ import {
 } from './types/card';
 import { COPY } from './utils/i18n';
 import {
-  buildWhatsAppUrl,
   createNewCard,
   decodeCardFromHash,
   deleteCardById,
-  downloadVCard,
   fetchAllCards,
   fetchCardById,
 } from './utils/vcard';
@@ -82,9 +80,6 @@ export default function App() {
 
   const [mobileEditorOpen, setMobileEditorOpen] = useState<boolean>(false);
   const [qrOpen, setQrOpen] = useState<boolean>(false);
-  const [stickySaving, setStickySaving] = useState<boolean>(false);
-  const [stickySavedNotice, setStickySavedNotice] = useState<boolean>(false);
-
   const [generating, setGenerating] = useState<boolean>(false);
   const [lastGeneratedCard, setLastGeneratedCard] = useState<StoredBusinessCard | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -337,19 +332,6 @@ export default function App() {
     }
   };
 
-  const handleStickySaveContact = async () => {
-    if (stickySaving) return;
-    setStickySaving(true);
-    try {
-      await downloadVCard(card);
-      setStickySavedNotice(true);
-      setTimeout(() => setStickySavedNotice(false), 3800);
-    } finally {
-      setStickySaving(false);
-    }
-  };
-
-  const whatsappHref = buildWhatsAppUrl(card.phone);
   const isPublicCardLink = Boolean(urlCardId) || Boolean(decodeCardFromHash());
 
   return (
@@ -464,7 +446,7 @@ export default function App() {
       </header>
 
       {/* Main Content Canvas */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 pt-5 pb-28 sm:px-6 sm:pt-8 lg:pb-12">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 pt-5 pb-12 sm:px-6 sm:pt-8">
         {loadingRemoteCard ? (
           <div className="max-w-[430px] mx-auto bg-white rounded-3xl border border-black/[0.08] p-8 text-center text-sm text-[#68707D]">
             Loading card...
@@ -502,7 +484,7 @@ export default function App() {
                 cardId={activeCardId}
                 copy={copy}
                 onOpenQr={() => setQrOpen(true)}
-                showInlineSaveButton={false}
+                showInlineSaveButton={true}
               />
             </div>
           </div>
@@ -525,7 +507,7 @@ export default function App() {
                   cardId={activeCardId}
                   copy={copy}
                   onOpenQr={() => setQrOpen(true)}
-                  showInlineSaveButton={false}
+                  showInlineSaveButton={true}
                 />
               </div>
             </div>
@@ -554,47 +536,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      {/* Mobile Thumb-Zone Sticky Save Contact + WhatsApp Now Bar */}
-      {!mobileEditorOpen && !loadingRemoteCard && !cardNotFound && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 px-4 pt-3 pb-safe bg-gradient-to-t from-[#F4F4F2] via-[#F4F4F2]/95 to-transparent pointer-events-none">
-          <div className="max-w-[430px] mx-auto pointer-events-auto">
-            {stickySavedNotice && (
-              <div
-                role="status"
-                className="mb-2 rounded-xl bg-[#141619] text-white px-3.5 py-2 text-xs text-center shadow-md"
-              >
-                {copy.contactSavedHint}
-              </div>
-            )}
-            <div className={whatsappHref ? 'grid grid-cols-2 gap-2.5' : 'grid grid-cols-1'}>
-              <button
-                type="button"
-                onClick={handleStickySaveContact}
-                disabled={stickySaving}
-                className="w-full min-h-[50px] px-3.5 rounded-2xl bg-[#0F4C45] hover:bg-[#0B3B35] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-[0_10px_24px_-6px_rgba(15,76,69,0.4)] active:scale-[0.98] transition-transform cursor-pointer whitespace-nowrap"
-              >
-                <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} />
-                <span className="truncate">
-                  {stickySaving ? copy.savingContact : copy.saveContact}
-                </span>
-              </button>
-
-              {whatsappHref && (
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full min-h-[50px] px-3.5 rounded-2xl bg-[#128C7E] hover:bg-[#0E7468] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-[0_10px_24px_-6px_rgba(18,140,126,0.4)] active:scale-[0.98] transition-transform whitespace-nowrap"
-                >
-                  <MessageCircle className="h-4 w-4 shrink-0" strokeWidth={2} />
-                  <span className="truncate">{copy.whatsappNow}</span>
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Mobile Slide-Up Backend Studio Sheet */}
       {!isPublicCardLink && mobileEditorOpen && (
