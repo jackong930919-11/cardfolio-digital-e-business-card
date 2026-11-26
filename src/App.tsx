@@ -164,6 +164,8 @@ export default function App() {
 
   // Load directory of generated cards from backend
   useEffect(() => {
+    if (urlCardId || decodeCardFromHash()) return;
+
     let cancelled = false;
     fetchAllCards()
       .then((cards) => {
@@ -181,7 +183,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [urlCardId]);
 
   // Persist draft in localStorage only when editing locally (not on a specific ?id= customer view)
   useEffect(() => {
@@ -348,6 +350,7 @@ export default function App() {
   };
 
   const whatsappHref = buildWhatsAppUrl(card.phone);
+  const isPublicCardLink = Boolean(urlCardId) || Boolean(decodeCardFromHash());
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F4F2] text-[#141619]">
@@ -360,30 +363,32 @@ export default function App() {
           </span>
 
           {/* Zone 2: Desktop View Mode Toggle */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[#68707D]">
-            <button
-              type="button"
-              onClick={enterStudioMode}
-              className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                !customerMode
-                  ? 'text-[#141619] underline underline-offset-8 decoration-2 decoration-[#0F4C45]'
-                  : 'hover:text-[#141619]'
-              }`}
-            >
-              {copy.studioView}
-            </button>
-            <button
-              type="button"
-              onClick={() => setCustomerMode(true)}
-              className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                customerMode
-                  ? 'text-[#141619] underline underline-offset-8 decoration-2 decoration-[#0F4C45]'
-                  : 'hover:text-[#141619]'
-              }`}
-            >
-              {copy.customerView}
-            </button>
-          </nav>
+          {!isPublicCardLink && (
+            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[#68707D]">
+              <button
+                type="button"
+                onClick={enterStudioMode}
+                className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                  !customerMode
+                    ? 'text-[#141619] underline underline-offset-8 decoration-2 decoration-[#0F4C45]'
+                    : 'hover:text-[#141619]'
+                }`}
+              >
+                {copy.studioView}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomerMode(true)}
+                className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                  customerMode
+                    ? 'text-[#141619] underline underline-offset-8 decoration-2 decoration-[#0F4C45]'
+                    : 'hover:text-[#141619]'
+                }`}
+              >
+                {copy.customerView}
+              </button>
+            </nav>
+          )}
 
           {/* Zone 3: Language + Mobile Builder Trigger */}
           <div className="flex items-center gap-2 shrink-0">
@@ -417,39 +422,43 @@ export default function App() {
             </div>
 
             {/* Mobile Builder Drawer Button */}
-            <button
-              type="button"
-              onClick={() => setMobileEditorOpen(true)}
-              className="lg:hidden min-h-[40px] px-3 py-1.5 rounded-xl bg-white border border-black/[0.09] text-xs font-medium text-[#141619] flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] transition-transform cursor-pointer"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              <span>{copy.editCard}</span>
-            </button>
+            {!isPublicCardLink && (
+              <button
+                type="button"
+                onClick={() => setMobileEditorOpen(true)}
+                className="lg:hidden min-h-[40px] px-3 py-1.5 rounded-xl bg-white border border-black/[0.09] text-xs font-medium text-[#141619] flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] transition-transform cursor-pointer"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>{copy.editCard}</span>
+              </button>
+            )}
 
             {/* Desktop Quick Mode Action */}
-            <button
-              type="button"
-              onClick={() => {
-                if (customerMode) {
-                  enterStudioMode();
-                } else {
-                  setCustomerMode(true);
-                }
-              }}
-              className="hidden lg:inline-flex min-h-[38px] px-3.5 py-1.5 rounded-xl bg-white border border-black/[0.09] hover:bg-[#FAF9F7] text-xs font-medium text-[#141619] items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors cursor-pointer"
-            >
-              {customerMode ? (
-                <>
-                  <Pencil className="h-3.5 w-3.5" />
-                  <span>{copy.editCard}</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="h-3.5 w-3.5" />
-                  <span>{copy.customerView}</span>
-                </>
-              )}
-            </button>
+            {!isPublicCardLink && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (customerMode) {
+                    enterStudioMode();
+                  } else {
+                    setCustomerMode(true);
+                  }
+                }}
+                className="hidden lg:inline-flex min-h-[38px] px-3.5 py-1.5 rounded-xl bg-white border border-black/[0.09] hover:bg-[#FAF9F7] text-xs font-medium text-[#141619] items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+              >
+                {customerMode ? (
+                  <>
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>{copy.editCard}</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>{copy.customerView}</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -466,13 +475,15 @@ export default function App() {
               {copy.cardNotFoundTitle}
             </h1>
             <p className="mt-2 text-sm text-[#68707D]">{copy.cardNotFoundDesc}</p>
-            <button
-              type="button"
-              onClick={enterStudioMode}
-              className="mt-5 min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0F4C45] text-white text-sm font-medium cursor-pointer"
-            >
-              {copy.backToStudio}
-            </button>
+            {!isPublicCardLink && (
+              <button
+                type="button"
+                onClick={enterStudioMode}
+                className="mt-5 min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0F4C45] text-white text-sm font-medium cursor-pointer"
+              >
+                {copy.backToStudio}
+              </button>
+            )}
           </div>
         ) : customerMode ? (
           <div className="max-w-[430px] mx-auto">
@@ -586,7 +597,7 @@ export default function App() {
       )}
 
       {/* Mobile Slide-Up Backend Studio Sheet */}
-      {mobileEditorOpen && (
+      {!isPublicCardLink && mobileEditorOpen && (
         <div
           className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/45 backdrop-blur-xs"
           onClick={() => setMobileEditorOpen(false)}
